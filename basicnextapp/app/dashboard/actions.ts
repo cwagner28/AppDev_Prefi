@@ -30,7 +30,7 @@ export async function getMyProfile(expectedUserId?: string): Promise<UserProfile
     throw new Error("SessionMismatch");
   }
 
-  const { rows } = await query<UserProfile>(
+  const { rows } = await query(
     'SELECT id, email, name, fullname, birthdate, gender, active FROM public.users WHERE id = $1',
     [session.user.id]
   );
