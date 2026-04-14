@@ -1,6 +1,6 @@
 "use server";
 
-import { query, pool } from "@/lib/db";
+import { query } from "@/lib/db";
 import { Client } from "pg";
 
 export async function checkDbConnection() {
