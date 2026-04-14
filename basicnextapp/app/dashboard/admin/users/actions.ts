@@ -35,7 +35,7 @@ async function checkPermission(requiredRoles: string[] = []) {
   // For Admin actions, we usually want at least some role.
   if (requiredRoles.length === 0) return session.user;
 
-  const { rows } = await query<{roleId: string}>(
+  const { rows } = await query(
     'SELECT "roleId" FROM public.usersroles WHERE "userId" = $1',
     [session.user.id]
   );
@@ -49,7 +49,7 @@ async function checkPermission(requiredRoles: string[] = []) {
 
 export async function getAllRoles(): Promise<Role[]> {
   await checkPermission(['ADMINISTRATOR']);
-  const { rows } = await query<Role>(
+  const { rows } = await query(
     'SELECT id, description FROM public.roles ORDER BY id ASC'
   );
   return rows;
@@ -62,7 +62,7 @@ export async function getUserRoles(userId: string): Promise<string[]> {
   // Allow if self
   if (session.user.id !== userId) {
       // If not self, check for Admin privileges
-      const { rows } = await query<{roleId: string}>(
+      const { rows } = await query(
         'SELECT "roleId" FROM public.usersroles WHERE "userId" = $1',
         [session.user.id]
       );
@@ -74,7 +74,7 @@ export async function getUserRoles(userId: string): Promise<string[]> {
       }
   }
 
-  const { rows } = await query<{roleId: string}>(
+  const { rows } = await query(
     'SELECT "roleId" FROM public.usersroles WHERE "userId" = $1',
     [userId]
   );
@@ -112,7 +112,7 @@ export async function removeRole(userId: string, roleId: string): Promise<void> 
 
 export async function getUsers(): Promise<User[]> {
   await checkPermission(['ADMINISTRATOR', 'USERS_CANACCESSUSERS']);
-  const { rows } = await query<User>(
+  const { rows } = await query(
     'SELECT id, email, name, fullname, birthdate, gender, active FROM public.users ORDER BY "createdAt" DESC'
   );
   return rows;
@@ -204,7 +204,7 @@ export async function changeUserPassword(userId: string, newPassword: string): P
         throw new Error("Failed to generate password hash");
     }
 
-    const hashRes = await query<{password: string}>(
+    const hashRes = await query(
         `SELECT password FROM public.accounts WHERE "userId" = $1`,
         [dummyUser.user.id]
     );
@@ -215,7 +215,7 @@ export async function changeUserPassword(userId: string, newPassword: string): P
     await query(`DELETE FROM public.users WHERE id = $1`, [dummyUser.user.id]);
     await query(`DELETE FROM public.usersroles WHERE "userId" = $1`, [dummyUser.user.id]);
 
-    const accountRes = await query<{id: string}>(
+    const accountRes = await query(
         `SELECT id FROM public.accounts WHERE "userId" = $1 AND "providerId" = 'credential'`,
         [userId]
     );

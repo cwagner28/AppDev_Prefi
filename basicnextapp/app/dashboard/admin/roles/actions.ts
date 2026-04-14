@@ -8,7 +8,7 @@ export interface Role {
 }
 
 export async function getRoles(): Promise<Role[]> {
-  const { rows } = await query<Role>('SELECT id, description FROM public.roles ORDER BY id ASC');
+  const { rows } = await query('SELECT id, description FROM public.roles ORDER BY id ASC');
   return rows;
 }
 
