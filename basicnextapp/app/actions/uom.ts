@@ -22,6 +22,14 @@ export async function updateUom(id: number, formData: FormData) {
 }
 
 export async function deleteUom(id: number) {
-  await query("DELETE FROM uom WHERE id=$1", [id]);
-  revalidatePath("/uom");
+  try {
+    await query("DELETE FROM uom WHERE id=$1", [id]);
+    revalidatePath("/uom");
+    return { success: true };
+  } catch (error: any) {
+    if (error?.code === "23503") {
+      return { error: "Cannot delete: this item is used by a medical test." };
+    }
+    return { error: "Failed to delete item." };
+  }
 }

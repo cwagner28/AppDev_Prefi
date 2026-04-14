@@ -9,6 +9,12 @@ export default function MedicalTestsPage() {
   const [uoms, setUoms] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [editId, setEditId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState("");
+  const [editUomId, setEditUomId] = useState("");
+  const [editNormalMin, setEditNormalMin] = useState("");
+  const [editNormalMax, setEditNormalMax] = useState("");
 
   async function load() {
     setTests(await getMedicalTests());
@@ -17,6 +23,29 @@ export default function MedicalTestsPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  function startEdit(test: any) {
+    setEditId(test.id);
+    setEditName(test.name ?? "");
+    setEditDescription(test.description ?? "");
+    setEditCategoryId(String(test.idcategory ?? ""));
+    setEditUomId(String(test.iduom ?? ""));
+    setEditNormalMin(String(test.normalmin ?? ""));
+    setEditNormalMax(String(test.normalmax ?? ""));
+  }
+
+  async function saveEdit(id: number) {
+    const formData = new FormData();
+    formData.set("name", editName);
+    formData.set("description", editDescription);
+    formData.set("idcategory", editCategoryId);
+    formData.set("iduom", editUomId);
+    formData.set("normalmin", editNormalMin);
+    formData.set("normalmax", editNormalMax);
+    await updateMedicalTest(id, formData);
+    setEditId(null);
+    await load();
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -58,25 +87,23 @@ export default function MedicalTestsPage() {
               {editId === t.id ? (
                 <>
                   <td className="border p-2">{t.id}</td>
-                  <form action={async (formData) => { await updateMedicalTest(t.id, formData); setEditId(null); load(); }}>
-                    <td className="border p-2"><input name="name" defaultValue={t.name} className="border p-1 rounded w-full" /></td>
-                    <td className="border p-2">
-                      <select name="idcategory" defaultValue={t.idcategory} className="border p-1 rounded">
-                        {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </td>
-                    <td className="border p-2">
-                      <select name="iduom" defaultValue={t.iduom} className="border p-1 rounded">
-                        {uoms.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                      </select>
-                    </td>
-                    <td className="border p-2"><input name="normalmin" defaultValue={t.normalmin} type="number" step="any" className="border p-1 rounded w-20" /></td>
-                    <td className="border p-2"><input name="normalmax" defaultValue={t.normalmax} type="number" step="any" className="border p-1 rounded w-20" /></td>
-                    <td className="border p-2 flex gap-2">
-                      <button type="submit" className="bg-green-600 text-white px-3 py-1 rounded">Save</button>
-                      <button type="button" onClick={() => setEditId(null)} className="bg-gray-400 text-white px-3 py-1 rounded">Cancel</button>
-                    </td>
-                  </form>
+                  <td className="border p-2"><input value={editName} onChange={(e) => setEditName(e.target.value)} className="border p-1 rounded w-full" /></td>
+                  <td className="border p-2">
+                    <select value={editCategoryId} onChange={(e) => setEditCategoryId(e.target.value)} className="border p-1 rounded">
+                      {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </td>
+                  <td className="border p-2">
+                    <select value={editUomId} onChange={(e) => setEditUomId(e.target.value)} className="border p-1 rounded">
+                      {uoms.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                  </td>
+                  <td className="border p-2"><input value={editNormalMin} onChange={(e) => setEditNormalMin(e.target.value)} type="number" step="any" className="border p-1 rounded w-20" /></td>
+                  <td className="border p-2"><input value={editNormalMax} onChange={(e) => setEditNormalMax(e.target.value)} type="number" step="any" className="border p-1 rounded w-20" /></td>
+                  <td className="border p-2 flex gap-2">
+                    <button type="button" onClick={() => saveEdit(t.id)} className="bg-green-600 text-white px-3 py-1 rounded">Save</button>
+                    <button type="button" onClick={() => setEditId(null)} className="bg-gray-400 text-white px-3 py-1 rounded">Cancel</button>
+                  </td>
                 </>
               ) : (
                 <>
@@ -87,7 +114,7 @@ export default function MedicalTestsPage() {
                   <td className="border p-2">{t.normalmin}</td>
                   <td className="border p-2">{t.normalmax}</td>
                   <td className="border p-2 flex gap-2">
-                    <button onClick={() => setEditId(t.id)} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+                    <button onClick={() => startEdit(t)} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
                     <button onClick={async () => { await deleteMedicalTest(t.id); load(); }} className="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
                   </td>
                 </>

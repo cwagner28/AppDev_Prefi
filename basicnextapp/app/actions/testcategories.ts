@@ -22,6 +22,14 @@ export async function updateTestCategory(id: number, formData: FormData) {
 }
 
 export async function deleteTestCategory(id: number) {
-  await query("DELETE FROM testcategories WHERE id=$1", [id]);
-  revalidatePath("/testcategories");
+  try {
+    await query("DELETE FROM testcategories WHERE id=$1", [id]);
+    revalidatePath("/testcategories");
+    return { success: true };
+  } catch (error: any) {
+    if (error?.code === "23503") {
+      return { error: "Cannot delete: this item is used by a medical test." };
+    }
+    return { error: "Failed to delete item." };
+  }
 }
