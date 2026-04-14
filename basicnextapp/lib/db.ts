@@ -5,7 +5,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function query<T = any>(text: string, params?: any[]) {
+export async function query<T extends Record<string, any> = Record<string, any>>(text: string, params?: any[]) {
   const res = await pool.query<T>(text, params);
   return res;
 }
