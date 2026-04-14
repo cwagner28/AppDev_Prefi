@@ -35,7 +35,7 @@ export async function getMyProfile(expectedUserId?: string): Promise<UserProfile
     [session.user.id]
   );
 
-  return rows[0] || null;
+  return (rows[0] as any) || null;
 }
 
 export async function updateMyProfile(data: {
@@ -123,8 +123,9 @@ export async function changeMyPassword(userId: string, newPassword: string): Pro
       `SELECT password FROM public.accounts WHERE "userId" = $1`,
       [dummyUser.user.id]
   );
+  const hashRows = hashRes.rows as any[];
   
-  const hashedPassword = hashRes.rows[0].password;
+  const hashedPassword = hashRows[0]?.password;
 
   // Delete dummy
   await query(`DELETE FROM public.accounts WHERE "userId" = $1`, [dummyUser.user.id]);
@@ -136,11 +137,12 @@ export async function changeMyPassword(userId: string, newPassword: string): Pro
       `SELECT id FROM public.accounts WHERE "userId" = $1 AND "providerId" = 'credential'`,
       [userId]
   );
+  const accountRows = accountRes.rows as any[];
 
-  if (accountRes.rows.length > 0) {
+  if (accountRows.length > 0) {
       await query(
           `UPDATE public.accounts SET password = $2, "updatedAt" = NOW() WHERE id = $1`,
-          [accountRes.rows[0].id, hashedPassword]
+          [accountRows[0].id, hashedPassword]
       );
   } else {
       // Create new account if missing (should not happen for credential user, but safe fallback)
