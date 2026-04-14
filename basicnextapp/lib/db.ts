@@ -5,7 +5,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function query(text: string, params?: any[]) {
-  const res = await pool.query(text, params);
+export async function query<T = any>(text: string, params?: any[]) {
+  const res = await pool.query<T>(text, params);
   return res;
 }
