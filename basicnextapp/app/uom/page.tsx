@@ -41,9 +41,62 @@ export default function UomPage() {
     await load();
   }
 
+  async function downloadExcel() {
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Units of Measure");
+
+    worksheet.columns = [
+      { header: "ID", key: "id", width: 10 },
+      { header: "Name", key: "name", width: 30 },
+      { header: "Description", key: "description", width: 40 },
+    ];
+
+    uoms.forEach((u) => {
+      worksheet.addRow({
+        id: u.id,
+        name: u.name ?? "",
+        description: u.description ?? "",
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "uom.xlsx";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function printPdf() {
+    window.print();
+  }
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Units of Measure</h1>
+    <div className="print-page p-8 max-w-4xl mx-auto">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Units of Measure</h1>
+        <div className="no-print flex gap-2">
+          <button
+            type="button"
+            onClick={downloadExcel}
+            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+          >
+            Download to Excel
+          </button>
+          <button
+            type="button"
+            onClick={printPdf}
+            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+          >
+            Print to PDF
+          </button>
+        </div>
+      </div>
       {errorMessage ? <p className="mb-4 text-red-600">{errorMessage}</p> : null}
 
       {/* Add Form */}
@@ -54,7 +107,7 @@ export default function UomPage() {
       </form>
 
       {/* Table */}
-      <table className="w-full border-collapse border">
+      <table className="print-table w-full border-collapse border">
         <thead className="bg-gray-100">
           <tr>
             <th className="border p-2 text-left">ID</th>

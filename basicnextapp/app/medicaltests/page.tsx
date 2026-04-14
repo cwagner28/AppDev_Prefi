@@ -47,9 +47,68 @@ export default function MedicalTestsPage() {
     await load();
   }
 
+  async function downloadExcel() {
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Medical Tests");
+
+    worksheet.columns = [
+      { header: "ID", key: "id", width: 10 },
+      { header: "Name", key: "name", width: 30 },
+      { header: "Category", key: "category", width: 30 },
+      { header: "Unit", key: "unit", width: 20 },
+      { header: "Min", key: "normalmin", width: 15 },
+      { header: "Max", key: "normalmax", width: 15 },
+    ];
+
+    tests.forEach((t) => {
+      worksheet.addRow({
+        id: t.id,
+        name: t.name ?? "",
+        category: t.category ?? "",
+        unit: t.unit ?? "",
+        normalmin: t.normalmin ?? "",
+        normalmax: t.normalmax ?? "",
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "medical-tests.xlsx";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function printPdf() {
+    window.print();
+  }
+
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Medical Tests</h1>
+    <div className="print-page p-8 max-w-6xl mx-auto">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Medical Tests</h1>
+        <div className="no-print flex gap-2">
+          <button
+            type="button"
+            onClick={downloadExcel}
+            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+          >
+            Download to Excel
+          </button>
+          <button
+            type="button"
+            onClick={printPdf}
+            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+          >
+            Print to PDF
+          </button>
+        </div>
+      </div>
 
       {/* Add Form */}
       <form action={async (formData) => { await createMedicalTest(formData); load(); }} className="flex flex-wrap gap-2 mb-8">
@@ -69,7 +128,7 @@ export default function MedicalTestsPage() {
       </form>
 
       {/* Table */}
-      <table className="w-full border-collapse border text-sm">
+      <table className="print-table w-full border-collapse border text-sm">
         <thead className="bg-gray-100">
           <tr>
             <th className="border p-2 text-left">ID</th>
