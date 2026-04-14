@@ -119,7 +119,7 @@ export async function changeMyPassword(userId: string, newPassword: string): Pro
   }
 
   // Get the hash
-  const hashRes = await query<{password: string}>(
+  const hashRes = await query(
       `SELECT password FROM public.accounts WHERE "userId" = $1`,
       [dummyUser.user.id]
   );
@@ -132,7 +132,7 @@ export async function changeMyPassword(userId: string, newPassword: string): Pro
   await query(`DELETE FROM public.usersroles WHERE "userId" = $1`, [dummyUser.user.id]);
 
   // Update target user account
-  const accountRes = await query<{id: string}>(
+  const accountRes = await query(
       `SELECT id FROM public.accounts WHERE "userId" = $1 AND "providerId" = 'credential'`,
       [userId]
   );
